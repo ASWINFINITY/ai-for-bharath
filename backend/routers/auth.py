@@ -1,16 +1,24 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordRequestForm
-import schemas, crud, auth
+import schemas, crud, auth, models
 from database import get_db
 
 router = APIRouter()
 
-@router.post("/register", response_model=schemas.UserResponse)
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+@router.post("/register/citizen", response_model=schemas.UserResponse)
+def register_citizen(user: schemas.CitizenCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
+    return crud.create_user(db=db, user=user)
+
+@router.post("/register/authority", response_model=schemas.UserResponse)
+def register_authority(user: schemas.AuthorityCreate, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    # For a real app, you might check a master admin token or invite code here
     return crud.create_user(db=db, user=user)
 
 @router.post("/login", response_model=schemas.Token)
@@ -24,3 +32,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
         )
     access_token = auth.create_access_token(data={"sub": user.email, "role": user.role})
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/me", response_model=schemas.UserResponse)
+def get_me(db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    return current_user

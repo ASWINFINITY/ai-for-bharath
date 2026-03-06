@@ -28,10 +28,20 @@ def create_complaint(db: Session, complaint: schemas.ComplaintCreate, user_id: i
     from clustering import assign_cluster
     cluster = assign_cluster(db, db_complaint)
     
+    # Award reward points to the user for reporting
+    if user_id:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        if user:
+            user.reward_points += 10
+            db.commit()
+            
     return db_complaint, cluster
 
 def get_complaints(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Complaint).offset(skip).limit(limit).all()
+
+def get_user_complaints(db: Session, user_id: int, skip: int = 0, limit: int = 100):
+    return db.query(models.Complaint).filter(models.Complaint.user_id == user_id).offset(skip).limit(limit).all()
 
 def get_clusters(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Cluster).offset(skip).limit(limit).all()
@@ -44,3 +54,12 @@ def get_cluster(db: Session, cluster_id: int):
         complaints = db.query(models.Complaint).filter(models.Complaint.id.in_(complaint_ids)).all()
         return {"cluster": cluster, "complaints": complaints}
     return None
+
+def delete_complaint(db: Session, complaint_id: int, user_id: int):
+    complaint = db.query(models.Complaint).filter(models.Complaint.id == complaint_id, models.Complaint.user_id == user_id).first()
+    if complaint:
+        db.query(models.ClusterMember).filter(models.ClusterMember.complaint_id == complaint_id).delete()
+        db.delete(complaint)
+        db.commit()
+        return True
+    return False

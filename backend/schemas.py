@@ -10,8 +10,16 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str
 
+class CitizenCreate(UserCreate):
+    role: str = "citizen"
+
+class AuthorityCreate(UserCreate):
+    role: str = "authority"
+    # Additional authority fields could go here (e.g., department, badge_number)
+
 class UserResponse(UserBase):
     id: int
+    reward_points: int = 0
     created_at: datetime
     class Config:
         from_attributes = True

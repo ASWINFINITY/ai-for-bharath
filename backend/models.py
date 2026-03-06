@@ -11,6 +11,7 @@ class User(Base):
     email = Column(String, unique=True, index=True)
     password_hash = Column(String)
     role = Column(String, default="citizen") # citizen or authority
+    reward_points = Column(Integer, default=0)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     complaints = relationship("Complaint", back_populates="user")

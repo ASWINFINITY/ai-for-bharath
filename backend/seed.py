@@ -15,8 +15,11 @@ def seed_db():
         return
 
     # Create dummy users
-    authority = crud.create_user(db, schemas.UserCreate(name="Admin Pune", email="admin@localhelp.ai", password="password123", role="authority"))
-    citizen = crud.create_user(db, schemas.UserCreate(name="Rahul Sharma", email="test@example.com", password="password123", role="citizen"))
+    admin_data = schemas.AuthorityCreate(name="Admin Pune", email="admin@localhelp.ai", password="password123")
+    authority = crud.create_user(db, admin_data)
+    
+    citizen_data = schemas.CitizenCreate(name="Rahul Sharma", email="test@example.com", password="password123")
+    citizen = crud.create_user(db, citizen_data)
     
     # Create some demo complaints to test clustering MVP
     # This will trigger the clustering logic in create_complaint

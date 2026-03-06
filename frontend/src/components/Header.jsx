@@ -1,9 +1,17 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ThemeToggle from './ThemeToggle';
 import NotificationDropdown from './NotificationDropdown';
+import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { user, isAuthenticated, logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+        navigate('/login');
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-[#e5e9eb] bg-surface-light/95 backdrop-blur supports-[backdrop-filter]:bg-surface-light/60 dark:bg-surface-dark/95 dark:border-gray-800">
@@ -24,12 +32,16 @@ export default function Header() {
                         <Link to="/map" className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-white ${location.pathname === '/map' ? 'text-primary dark:text-white font-bold border-b-2 border-primary' : 'text-text-main dark:text-gray-300'}`}>
                             Live Map
                         </Link>
-                        <Link to="/authority" className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-white ${location.pathname === '/authority' ? 'text-primary dark:text-white font-bold border-b-2 border-primary' : 'text-text-main dark:text-gray-300'}`}>
-                            Authority
-                        </Link>
-                        <Link to="/profile" className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-white ${location.pathname === '/profile' ? 'text-primary dark:text-white font-bold border-b-2 border-primary' : 'text-text-main dark:text-gray-300'}`}>
-                            Profile
-                        </Link>
+                        {user?.role === 'authority' && (
+                            <Link to="/authority" className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-white ${location.pathname === '/authority' ? 'text-primary dark:text-white font-bold border-b-2 border-primary' : 'text-text-main dark:text-gray-300'}`}>
+                                Authority
+                            </Link>
+                        )}
+                        {isAuthenticated && (
+                            <Link to="/profile" className={`text-sm font-medium transition-colors hover:text-primary dark:hover:text-white ${location.pathname === '/profile' ? 'text-primary dark:text-white font-bold border-b-2 border-primary' : 'text-text-main dark:text-gray-300'}`}>
+                                Profile
+                            </Link>
+                        )}
                     </nav>
                 </div>
 
@@ -41,11 +53,23 @@ export default function Header() {
 
                     <ThemeToggle />
 
-                    <NotificationDropdown />
+                    {isAuthenticated && (
+                        <>
+                            <NotificationDropdown />
+                            <div className="hidden sm:block bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 ring-2 ring-white dark:ring-slate-700 shadow-sm cursor-pointer"
+                                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCykd24-SX3T_epnXgZ7P8ogoLIcRwdPHY9xScwpOERDXNL2oaYXJRnjuLPAJSsb4GFKJMOP83LVH04YwHfe2RaXzRcIJpDNflt2fT0BiKU0V-CBOcvnHuG-f5h7u8Ax4LRa2KRzdvCletB4VD0p3NXQMuMVhSarkqBHT3KlCKNs6raKczPPgdwgefPQ_mL3k1hq8OdlnA3DA3-XhDOibD5KeMiRkKBCoBvXZHJK7Wc2Xi6bumX_zKctxYAc9LzokL5eWAqBcu3LNo")' }}>
+                            </div>
+                            <button onClick={handleLogout} className="text-sm font-medium text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300">
+                                Logout
+                            </button>
+                        </>
+                    )}
 
-                    <div className="hidden sm:block bg-center bg-no-repeat aspect-square bg-cover rounded-full size-9 ring-2 ring-white dark:ring-slate-700 shadow-sm cursor-pointer"
-                        style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCykd24-SX3T_epnXgZ7P8ogoLIcRwdPHY9xScwpOERDXNL2oaYXJRnjuLPAJSsb4GFKJMOP83LVH04YwHfe2RaXzRcIJpDNflt2fT0BiKU0V-CBOcvnHuG-f5h7u8Ax4LRa2KRzdvCletB4VD0p3NXQMuMVhSarkqBHT3KlCKNs6raKczPPgdwgefPQ_mL3k1hq8OdlnA3DA3-XhDOibD5KeMiRkKBCoBvXZHJK7Wc2Xi6bumX_zKctxYAc9LzokL5eWAqBcu3LNo")' }}>
-                    </div>
+                    {!isAuthenticated && (
+                        <Link to="/login" className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">
+                            Log In
+                        </Link>
+                    )}
 
                     {/* Mobile Menu Button Display */}
                     <button className="md:hidden p-2 text-text-main dark:text-white">

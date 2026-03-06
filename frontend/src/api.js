@@ -29,5 +29,14 @@ export const getClusters = async () => {
     return response.data;
 };
 
-// Add interceptor for auth token if needed later
-// api.interceptors.request.use((config) => { ... })
+// Add interceptor for auth token
+api.interceptors.request.use((config) => {
+    // We try to get token from localStorage. The token is stored as "token" based on AuthContext
+    const token = localStorage.getItem('token');
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+}, (error) => {
+    return Promise.reject(error);
+});
